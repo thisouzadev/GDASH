@@ -6,10 +6,13 @@ import { Weather, WeatherSchema } from './schemas/weather.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Weather.name, schema: WeatherSchema }]), // <-- IMPORTANTE
+    MongooseModule.forFeature(
+      [{ name: Weather.name, schema: WeatherSchema }],
+      'weathers',
+    ),
   ],
   controllers: [WeatherController],
   providers: [WeatherService],
-  exports: [WeatherService], // se for usado em outros módulos
+  exports: [WeatherService],
 })
 export class WeatherModule { }

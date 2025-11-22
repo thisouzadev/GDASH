@@ -1,14 +1,17 @@
-import { Controller, Get, Post, Body, Res, Query, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Res, Query, HttpStatus, UseGuards } from '@nestjs/common';
 import { WeatherService } from './weather.service';
 import { CreateWeatherDto } from './dto/create-weather.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { Weather } from './schemas/weather.schema';
 import type { Response } from 'express';
 import * as ExcelJS from 'exceljs';
 import { createObjectCsvStringifier } from 'csv-writer';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Weather')
+@ApiBearerAuth()
 @Controller('api/weather')
+@UseGuards(JwtAuthGuard)
 export class WeatherController {
   constructor(private readonly weatherService: WeatherService) { }
 

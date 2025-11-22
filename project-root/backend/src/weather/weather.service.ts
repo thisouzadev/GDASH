@@ -7,7 +7,8 @@ import { CreateWeatherDto } from './dto/create-weather.dto';
 @Injectable()
 export class WeatherService {
   constructor(
-    @InjectModel(Weather.name) private weatherModel: Model<WeatherDocument>,
+    @InjectModel(Weather.name, 'weathers')
+    private weatherModel: Model<WeatherDocument>,
   ) { }
 
   /** Criar um novo registro meteorológico */
