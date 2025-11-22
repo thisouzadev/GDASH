@@ -46,6 +46,15 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('email/:email')
+  @ApiOperation({ summary: 'Buscar usuário pelo email' })
+  @ApiResponse({ status: 200, description: 'Usuário encontrado.', type: User })
+  @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
+  findOneByEmail(@Param('email') email: string) {
+    return this.usersService.findOneByEmail(email);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Atualizar um usuário pelo ID' })
   @ApiResponse({ status: 200, description: 'Usuário atualizado.', type: User })

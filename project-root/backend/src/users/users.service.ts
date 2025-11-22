@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { ConflictException, Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
@@ -50,11 +50,18 @@ export class UsersService implements OnModuleInit {
   // Criar usuário
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const createdUser = new this.userModel({
-      ...createUserDto,
-      password: hashedPassword,
-    });
-    return createdUser.save();
+    try {
+      const createdUser = new this.userModel({
+        ...createUserDto,
+        password: hashedPassword,
+      });
+      return await createdUser.save();
+    } catch (error: any) {
+      if (error.code === 11000 && error.keyValue.email) {
+        throw new ConflictException(`O email ${error.keyValue.email} já está cadastrado.`);
+      }
+      throw error;
+    }
   }
 
   // Listar todos usuários
