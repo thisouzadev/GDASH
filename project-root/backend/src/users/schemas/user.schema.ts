@@ -9,7 +9,7 @@ export class User {
   email: string;
 
   @Prop()
-  password_hash: string;
+  password: string;
 
   @Prop()
   name: string;
