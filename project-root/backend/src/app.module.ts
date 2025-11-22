@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
+import { WeatherModule } from './weather/weather.module';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRoot(process.env.DATABASE_URL as string),
+
+    WeatherModule, // <-- importa o módulo
+  ],
 })
-export class AppModule {}
+export class AppModule { }
