@@ -37,4 +37,10 @@
   "include": [
     "src"
   ],
+  "baseUrl": ".",
+  "paths": {
+    "@/*": [
+      "./src/*"
+    ]
+  }
 }
