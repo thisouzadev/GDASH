@@ -11,7 +11,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 @ApiTags('Weather')
 @ApiBearerAuth()
 @Controller('api/weather')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 export class WeatherController {
   constructor(private readonly weatherService: WeatherService) { }
 

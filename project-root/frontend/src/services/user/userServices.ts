@@ -1,8 +1,8 @@
 import axios, { type AxiosResponse } from "axios";
-import type { User } from "./type";
+import type { User } from "./types/user";
 
 class UserServices {
-  private baseUrl = "http://localhost:3000/api/users";
+  private baseUrl = `${import.meta.env.VITE_API_URL}/users`;
 
   // Cria usuário e trata email duplicado
   async createUser(user: User): Promise<AxiosResponse<User>> {
