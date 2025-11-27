@@ -3,15 +3,16 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Weather, WeatherDocument } from './schemas/weather.schema';
 import { CreateWeatherDto } from './dto/create-weather.dto';
+import { AiService } from 'src/ai/ai.service';
 
 @Injectable()
 export class WeatherService {
   constructor(
     @InjectModel(Weather.name, 'weathers')
     private weatherModel: Model<WeatherDocument>,
+    private readonly aiService: AiService
   ) { }
 
-  /** Criar um novo registro meteorológico */
   async create(createWeatherDto: CreateWeatherDto): Promise<Weather> {
     try {
       const created = new this.weatherModel(createWeatherDto);
@@ -21,7 +22,6 @@ export class WeatherService {
     }
   }
 
-  /** Listar registros com filtros, paginação e ordenação */
   async findAll(options?: {
     limit?: number;
     page?: number;
@@ -50,7 +50,6 @@ export class WeatherService {
     return { data, total };
   }
 
-  /** Retorna dados brutos para exportação CSV/XLSX */
   async findAllDataForExport(options?: { from?: string; to?: string }): Promise<Partial<Weather>[]> {
     const query: any = {};
     if (options?.from || options?.to) {
@@ -58,7 +57,23 @@ export class WeatherService {
       if (options.from) query.timestamp.$gte = options.from;
       if (options.to) query.timestamp.$lte = options.to;
     }
-    return this.weatherModel.find(query).lean().exec(); // retorna Partial<Weather>[]
+    return this.weatherModel.find(query).lean().exec();
   }
 
+  async generateInsights() {
+    const last100 = await this.weatherModel
+      .find()
+      .sort({ timestamp: -1 })
+      .limit(100)
+      .lean()
+      .exec();
+
+    const insight = await this.aiService.generateWeatherInsight(last100);
+
+    return this.aiService.saveInsight(insight);
+  }
+
+  async getLastInsight() {
+    return this.aiService.getLastInsight();
+  }
 }

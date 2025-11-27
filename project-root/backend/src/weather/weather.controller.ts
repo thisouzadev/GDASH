@@ -7,24 +7,27 @@ import type { Response } from 'express';
 import * as ExcelJS from 'exceljs';
 import { createObjectCsvStringifier } from 'csv-writer';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AiService } from 'src/ai/ai.service';
 
 @ApiTags('Weather')
 @ApiBearerAuth()
 @Controller('api/weather')
 // @UseGuards(JwtAuthGuard)
 export class WeatherController {
-  constructor(private readonly weatherService: WeatherService) { }
+  constructor(
+    private readonly weatherService: WeatherService,
+    private readonly aiService: AiService
+  ) { }
 
-  // --- Criar registro ---
   @Post('logs')
   @ApiOperation({ summary: 'Criar um registro meteorológico (Worker Go)' })
   @ApiResponse({ status: 201, description: 'Registro criado com sucesso.', type: Weather })
   @ApiResponse({ status: 400, description: 'Dados de entrada inválidos.' })
   async create(@Body() createWeatherDto: CreateWeatherDto) {
+
     return this.weatherService.create(createWeatherDto);
   }
 
-  // --- Listar registros com paginação/filtros ---
   @Get('logs')
   @ApiOperation({ summary: 'Listar registros meteorológicos com filtros e paginação' })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -108,18 +111,24 @@ export class WeatherController {
   @ApiOperation({ summary: 'Acionar geração de insights de IA' })
   @ApiResponse({ status: 202, description: 'Geração de insights acionada com sucesso.' })
   async generateInsights() {
-    console.log('--- EVENTO DE IA ACIONADO ---');
-    return { status: 'accepted', message: 'Solicitação enviada para a camada de IA.' };
+
+    const data = await this.weatherService.findAllDataForExport();
+
+    const insightText = await this.aiService.generateWeatherInsight(data);
+    await this.aiService.saveInsight(insightText);
+
+    return {
+      status: 'accepted',
+      message: 'Insights gerados com sucesso.',
+      content: insightText,
+    };
   }
 
   @Get('insights')
-  @ApiOperation({ summary: 'Retornar último conjunto de insights de IA' })
-  @ApiResponse({ status: 200, description: 'Insights de IA retornados com sucesso.' })
+  @ApiOperation({ summary: 'Retornar último insight gerado pela IA' })
+  @ApiResponse({ status: 200, description: 'Insight retornado com sucesso.' })
   async getInsights() {
-    return {
-      last_generated: new Date().toISOString(),
-      summary: 'Previsão de temperatura acima da média para a próxima semana, com 90% de confiança.',
-      recommendation: 'Recomenda-se aumentar a irrigação nas plantações de baixo volume.'
-    };
+    return this.aiService.getLastInsight();
+
   }
 }
